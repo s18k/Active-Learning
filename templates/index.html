@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
-
-    <title>Active Learning</title>
+    <title>Iris Predictor</title>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
 </head>
 <body>
-    <form method="POST", action="{{url_for('query')}}">
-        <input name="queries" type="number" placeholder="Enter the number of samples you want to label">
-        <input type="submit",value="next">
-    </form>
+    <center>
+        <h1>MNIST Digits Dataset using Active Learning</h1>
+        <br>
+        <h1>Query Stratergy : Uncertainty Sampling </h1>
+        <br>
+        <h1>Classifier: Random Forest</h1>
+        <form method="POST", action="{{url_for('query')}}">
+
+            Number of Queries:<input name="queries" type="number" placeholder="Enter the number of samples you want to label">
+            <input type="submit",value="next">
+        </form>
+
+    </center>
 </body>
-<script src="myscripts.js"></script>
 </html>
