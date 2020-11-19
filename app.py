@@ -34,6 +34,8 @@ from modAL.uncertainty import uncertainty_sampling
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 from IPython import display
 # from matplotlib import pyplot as plt
@@ -64,7 +66,7 @@ def generate_image():
 
 @app.route("/")
 def main():
-    return render_template("index.html")
+    return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}])
 
 
 
@@ -130,8 +132,18 @@ def query():
 
     X_initial, y_initial = X_train[initial_idx], y_train[initial_idx]
     X_pool, y_pool = np.delete(X_train, initial_idx, axis=0), np.delete(y_train, initial_idx, axis=0)
+    classifier = None
+    cl = request.form.get('classifier_select')
+    if(str(cl)=='Random Forest'):
+        classifier = RandomForestClassifier()
+    elif(str(cl)=='KNN'):
+        classifier = KNeighborsClassifier()
+    else:
+        classifier = DecisionTreeClassifier()
+    print(classifier)
+    print(cl)
     learner = ActiveLearner(
-        estimator=RandomForestClassifier(),
+        estimator=classifier,
         query_strategy=uncertainty_sampling,
         X_training=X_initial, y_training=y_initial
     )

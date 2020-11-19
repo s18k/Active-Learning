@@ -1,23 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Iris Predictor</title>
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Active Learning</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+<!--    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">-->
 </head>
 <body>
-    <center>
-        <h1>MNIST Digits Dataset using Active Learning</h1>
+    <center style="background: #2F2FA2" >
+<!--        <h1>MNIST Digits Dataset using Active Learning</h1>-->
         <br>
-        <h1>Query Stratergy : Uncertainty Sampling </h1>
+        <h1 style="color:white">MNIST Digits DataSet </h1>
         <br>
-        <h1>Classifier: Random Forest</h1>
-        <form method="POST", action="{{url_for('query')}}">
+        <!-- Default form login -->
+        <form method="POST" class="text-center border border-light p-5"  style="height: 800px; width: 800px; border: 1px solid black; background:white" action="{{url_for('query')}}">
 
-            Number of Queries:<input name="queries" type="number" placeholder="Enter the number of samples you want to label">
-            <input type="submit",value="next">
-        </form>
+            <p class="h4 mb-4">Query Stratergy : Uncertainty Sampling </p>
+
+
+<!--            <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">-->
+            <div class="form-group">
+                <div class="input-group">
+
+                    <span class="input-group-addon">Please select the Classifier</span>
+                        <select name="classifier_select" class="selectpicker form-control">
+                          {% for o in data %}
+                          <option value="{{ o.name }}">{{ o.name }}</option>
+                          {% endfor %}
+                        </select>
+                </div>
+
+            </div>
+            <input name="queries" type="number" class="form-control mb-4" placeholder="Enter the number of samples you want to label">
+
+        <button class="btn btn-info btn-block my-4" type="submit" value="next">Submit</button>
+
+</form>
+<!--&lt;!&ndash; Default form login &ndash;&gt;-->
+<!--        <form method="POST" class="form-inline"action="{{url_for('query')}}">-->
+<!--            Number of Queries:<input name="queries" type="number" placeholder="Enter the number of samples you want to label">-->
+<!--                    <br>-->
+
+<!--            <div class="form-group">-->
+<!--                <div class="input-group">-->
+<!--                    -->
+<!--                    <span class="input-group-addon">Please select the Classifier</span>-->
+<!--                        <select name="classifier_select" class="selectpicker form-control">-->
+<!--                          {% for o in data %}-->
+<!--                          <option value="{{ o.name }}">{{ o.name }}</option>-->
+<!--                          {% endfor %}-->
+<!--                        </select>-->
+<!--                </div>-->
+<!--                <button type="submit" class="btn btn-default" value="next">Submit</button>-->
+<!--            </div>-->
+<!--        </form>-->
 
     </center>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
 </body>
 </html>

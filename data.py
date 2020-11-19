@@ -1,9 +1,6 @@
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from modAL.models import ActiveLearner
-from modAL.uncertainty import uncertainty_sampling
-
 
 
 class Data:
