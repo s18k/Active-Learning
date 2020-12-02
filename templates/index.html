@@ -9,25 +9,35 @@
 
 <!--    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">-->
 </head>
-<body>
-    <center style="background: #2F2FA2" >
+<body style="background: #2F2FA2">
+    <center  >
 <!--        <h1>MNIST Digits Dataset using Active Learning</h1>-->
         <br>
         <h1 style="color:white">MNIST Digits DataSet </h1>
         <br>
         <!-- Default form login -->
-        <form method="POST" class="text-center border border-light p-5"  style="height: 800px; width: 800px; border: 1px solid black; background:white" action="{{url_for('query')}}">
 
-            <p class="h4 mb-4">Query Stratergy : Uncertainty Sampling </p>
+        <form method="POST" class="text-center border border-light p-5"  style="height: 230px; width: 800px; border: 1px solid black; background:white" action="{{url_for('query')}}">
+
 
 
 <!--            <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">-->
-            <div class="form-group">
+            <div class="form-group" style="padding:10px;">
                 <div class="input-group">
 
-                    <span class="input-group-addon">Please select the Classifier</span>
+                    <span class="input-group-addon" style="width:300px">Please select the Classifier Algorithm</span>
                         <select name="classifier_select" class="selectpicker form-control">
                           {% for o in data %}
+                          <option value="{{ o.name }}">{{ o.name }}</option>
+                          {% endfor %}
+                        </select>
+                </div>
+
+                <hr>
+                <div class="input-group">
+                    <span class="input-group-addon" style="width:300px">Please select the Query Strategy</span>
+                        <select name="strategy_select" class="selectpicker form-control" >
+                          {% for o in query %}
                           <option value="{{ o.name }}">{{ o.name }}</option>
                           {% endfor %}
                         </select>

@@ -11,13 +11,14 @@ class Data:
             print("Here")
             Data()
         return Data.__data
-    def __init__(self,counter,X_pool,y_pool,learner,accuracy,X_test,y_test):
+    def __init__(self,counter,X_pool,y_pool,learner,committee,accuracy,X_test,y_test):
         print("Inint called")
         self.counter = counter
         self.X_pool = X_pool
         self.y_pool = y_pool
         self.learner = learner
-        self.accuracy = list([])
+        self.committee = committee
+        self.accuracy = list(accuracy)
         self.X_test = X_test
         self.y_test = y_test
         print(type(accuracy))
@@ -43,6 +44,7 @@ class Data:
         params["X_pool"] = self.X_pool
         params["y_pool"] = self.y_pool
         params["learner"] = self.learner
+        params["committee"] = self.committee
         params["accuracy"] = self.accuracy
         return params
 
