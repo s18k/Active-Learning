@@ -30,6 +30,8 @@ import numpy as np
 
 from modAL.models import ActiveLearner
 from modAL.uncertainty import uncertainty_sampling,entropy_sampling
+from modAL.disagreement import vote_entropy_sampling
+
 from modAL.models import ActiveLearner, Committee
 from modAL.models import BayesianOptimizer
 from modAL.batch import uncertainty_batch_sampling
@@ -39,6 +41,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from functools import partial
 
 import numpy as np
 
@@ -49,6 +52,10 @@ from IPython import display
 # from matplotlib import pyplot as plt
 
 
+def random_sampling(classifier, X_pool):
+    n_samples = len(X_pool)
+    query_idx = np.random.choice(range(n_samples))
+    return query_idx, X_pool[query_idx]
 
 # @app.route('/next')
 def generate_image():
@@ -74,7 +81,8 @@ def generate_image():
 
 @app.route("/")
 def main():
-    return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}],query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'}])
+    return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}],query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'},
+                                                                                                                         {'name':'Random Sampling'}])
 
 
 
@@ -115,7 +123,7 @@ def helper():
         if(learner!=None):
             learner.teach(query_inst.reshape(1, -1), y_new)
         elif(committee!=None):
-            committee.teach(query_inst.reshape(1, -1), y_new)
+            committee.teach(query_inst.reshape(1, -1), y_new,bootstrap=True)
         X_pool, y_pool = np.delete(X_pool, query_idx, axis=0), np.delete(y_pool, query_idx, axis=0)
         params = {}
         params["X_pool"] = X_pool
@@ -127,7 +135,7 @@ def helper():
             params["accuracy"] = committee.score(X_test, y_test)
         data.setdata(params)
         accuracy_string = ""
-        count = 1
+        count = 0
         iterations = ""
         for i in data.accuracy:
             n = float(i)
@@ -142,7 +150,21 @@ def helper():
         print("Accuracy string",accuracy_string)
         return render_template("after.html",data = accuracy_string,iteration = iterations)
     else:
-        return render_template("final.html",accuracy = data.accuracy[-1])
+        accuracy_string = ""
+        iterations = ""
+        count = 0
+        for i in data.accuracy:
+            n = float(i)
+            n *= 100
+            accuracy_string += str(n)
+            accuracy_string += ","
+            iterations += str(count)
+            iterations += ","
+            count += 1
+        accuracy_string = accuracy_string[:-1]
+        iterations = iterations[:-1]
+        print("Final",accuracy_string,iterations)
+        return render_template("final.html",accuracy = float(data.accuracy[-1])*100,data = accuracy_string,iteration = iterations)
 
 
 @app.route('/next',methods=['POST'])
@@ -194,30 +216,7 @@ def query():
         data = Data(n_queries,X_pool,y_pool,learner,None,accuracy,X_test,y_test)
         helper()
     elif(str(st)=='Entropy Sampling'):
-        n_members = 2
-        learner_list = list()
 
-        # for member_idx in range(n_members):
-        #     # initial training data
-        #     n_initial = 2
-        #     train_idx = np.random.choice(range(X_pool.shape[0]), size=n_initial, replace=False)
-        #     X_train = X_pool[train_idx]
-        #     y_train = y_pool[train_idx]
-        #
-        #     # creating a reduced copy of the data with the known instances removed
-        #     X_pool = np.delete(X_pool, train_idx, axis=0)
-        #     y_pool = np.delete(y_pool, train_idx)
-        #
-        #     # initializing learner
-        #     learner = ActiveLearner(
-        #         estimator=classifier,
-        #         X_training=X_train, y_training=y_train
-        #     )
-        #     learner_list.append(learner)
-        #
-        # # assembling the committee
-        #
-        # committee = Committee(learner_list=learner_list)
         # accuracy_scores = committee.score(X_test, y_test)
         # params["learner"] = committee
         # accuracy_scores = committee.score(X_test, y_test)
@@ -241,7 +240,40 @@ def query():
         accuracy.append(accuracy_scores)
         data = Data(n_queries, X_pool, y_pool, learner, None, accuracy, X_test, y_test)
         helper()
-
+    elif(str(st)=='Random Sampling'):
+        n_members = 2
+        learner_list = list()
+        # for member_idx in range(n_members):
+        #     # initial training data
+        #     n_initial = 2
+        #     train_idx = np.random.choice(range(X_pool.shape[0]), size=n_initial, replace=False)
+        #     X_train = X_pool[train_idx]
+        #     y_train = y_pool[train_idx]
+        #
+        #     # creating a reduced copy of the data with the known instances removed
+        #     X_pool = np.delete(X_pool, train_idx, axis=0)
+        #     y_pool = np.delete(y_pool, train_idx)
+        #
+        #     # initializing learner
+        #     learner = ActiveLearner(
+        #         estimator=classifier,
+        #         X_training=X_train, y_training=y_train
+        #     )
+        #     learner_list.append(learner)
+        #
+        # # assembling the committee
+        learner = ActiveLearner(
+            estimator=RandomForestClassifier(),
+            query_strategy=random_sampling,
+            X_training=X_train, y_training=y_train
+        )
+        accuracy_scores = learner.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool,learner, None , accuracy, X_test, y_test)
+        helper()
     # query_idx, query_inst = learner.query(X_pool)
     # data = query_inst.reshape(8,8)
     # rescaled = (255.0 / data.max() * (data - data.min())).astype(np.uint8)
