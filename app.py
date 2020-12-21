@@ -30,7 +30,7 @@ import numpy as np
 
 from modAL.models import ActiveLearner
 from modAL.uncertainty import uncertainty_sampling,entropy_sampling
-from modAL.disagreement import vote_entropy_sampling
+from modAL.disagreement import vote_entropy_sampling,max_disagreement_sampling,max_std_sampling,consensus_entropy_sampling
 
 from modAL.models import ActiveLearner, Committee
 from modAL.models import BayesianOptimizer
@@ -81,10 +81,16 @@ def generate_image():
 
 @app.route("/")
 def main():
-    return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}],query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'},
-                                                                                                                         {'name':'Random Sampling'},
-                                                                                                                         {'name':'Query By Committee'}
-                                                                                                                         ])
+    return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}],
+                           query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'},
+                                    {'name':'Random Sampling'},
+                                    {'name':'Query By Committee(Uncertainty Sampling)'},
+                                    {'name':'Query By Committee(Vote Entropy Sampling)'},
+                                    {'name':'Query By Committee(Max Disagreement Sampling)'},
+                                    {'name':'Query By Committee(Max STD Sampling)'},
+                                    {'name':'Query By Committee(Consensus Entropy Sampling)'}
+
+                                  ])
 
 
 @app.route('/train', methods=['POST'])
@@ -216,13 +222,6 @@ def query():
         helper()
     elif(str(st)=='Entropy Sampling'):
 
-        # accuracy_scores = committee.score(X_test, y_test)
-        # params["learner"] = committee
-        # accuracy_scores = committee.score(X_test, y_test)
-        # params["accuracy"] = accuracy_scores
-        # print(accuracy_scores)
-        # accuracy = []
-        # accuracy.append(accuracy_scores)
         print(classifier)
         print(cl)
         learner = ActiveLearner(
@@ -240,27 +239,6 @@ def query():
         data = Data(n_queries, X_pool, y_pool, learner, None, accuracy, X_test, y_test)
         helper()
     elif(str(st)=='Random Sampling'):
-        n_members = 2
-        learner_list = list()
-        # for member_idx in range(n_members):
-        #     # initial training data
-        #     n_initial = 2
-        #     train_idx = np.random.choice(range(X_pool.shape[0]), size=n_initial, replace=False)
-        #     X_train = X_pool[train_idx]
-        #     y_train = y_pool[train_idx]
-        #
-        #     # creating a reduced copy of the data with the known instances removed
-        #     X_pool = np.delete(X_pool, train_idx, axis=0)
-        #     y_pool = np.delete(y_pool, train_idx)
-        #
-        #     # initializing learner
-        #     learner = ActiveLearner(
-        #         estimator=classifier,
-        #         X_training=X_train, y_training=y_train
-        #     )
-        #     learner_list.append(learner)
-        #
-        # # assembling the committee
         learner = ActiveLearner(
             estimator=classifier,
             query_strategy=random_sampling,
@@ -273,7 +251,7 @@ def query():
         accuracy.append(accuracy_scores)
         data = Data(n_queries, X_pool, y_pool,learner, None , accuracy, X_test, y_test)
         helper()
-    else:
+    elif(str(st)=='Query By Committee(Vote Entropy Sampling)'):
         learner1 = ActiveLearner(
             estimator = RandomForestClassifier(),
             X_training=X_train,y_training=y_train
@@ -287,7 +265,8 @@ def query():
             X_training=X_train,y_training=y_train
         )
         committee = Committee(
-            learner_list=[learner1,learner2,learner3]
+            learner_list=[learner1,learner2,learner3],
+            query_strategy=vote_entropy_sampling
         )
         params["committee"] = committee
         accuracy_scores = committee.score(X_test, y_test)
@@ -298,63 +277,110 @@ def query():
         data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
         helper()
 
-    # query_idx, query_inst = learner.query(X_pool)
-    # data = query_inst.reshape(8,8)
-    # rescaled = (255.0 / data.max() * (data - data.min())).astype(np.uint8)
-    # im = Image.fromarray(rescaled)
-    # new_size = (300,300)
-    # im = im.resize(new_size)
-    # filename = secure_filename("image.png")
-    # im.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename)))
+    elif(str(st)=='Query By Committee(Uncertainty Sampling)'):
+        learner1 = ActiveLearner(
+            estimator = RandomForestClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner2 = ActiveLearner(
+            estimator=KNeighborsClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner3 = ActiveLearner(
+            estimator=DecisionTreeClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        committee = Committee(
+            learner_list=[learner1,learner2,learner3],
+            query_strategy=uncertainty_sampling
+        )
+        params["committee"] = committee
+        accuracy_scores = committee.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
+        helper()
 
-    # generate_image(query_inst.reshape(8, 8))
-    # try:
-    #     image = request.files['image']
-    #     nom_image = secure_filename(image.filename)
-    #     image = Image.open(image)
-    #     ...
-    #     img_io = BytesIO()
-    #     image.save(img_io, extension.upper(), quality=70)
-    #     img_io.seek(0)
-    #     return send_file(img_io, mimetype='image/jpeg', attachment_filename=nom_image, as_attachment=True)
-    # except Exception as e:
-    #     print(e)
+    elif(str(st)=='Query By Committee(Max Disagreement Sampling)'):
+        learner1 = ActiveLearner(
+            estimator = RandomForestClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner2 = ActiveLearner(
+            estimator=KNeighborsClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner3 = ActiveLearner(
+            estimator=DecisionTreeClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        committee = Committee(
+            learner_list=[learner1,learner2,learner3],
+            query_strategy=max_disagreement_sampling
+        )
+        params["committee"] = committee
+        accuracy_scores = committee.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
+        helper()
+
+    elif(str(st)=='Query By Committee(Max STD Sampling)'):
+        learner1 = ActiveLearner(
+            estimator = RandomForestClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner2 = ActiveLearner(
+            estimator=KNeighborsClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner3 = ActiveLearner(
+            estimator=DecisionTreeClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        committee = Committee(
+            learner_list=[learner1,learner2,learner3],
+            query_strategy=max_std_sampling
+        )
+        params["committee"] = committee
+        accuracy_scores = committee.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
+        helper()
+
+    elif(str(st)=='Query By Committee(Consensus Entropy Sampling)'):
+        learner1 = ActiveLearner(
+            estimator = RandomForestClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner2 = ActiveLearner(
+            estimator=KNeighborsClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner3 = ActiveLearner(
+            estimator=DecisionTreeClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        committee = Committee(
+            learner_list=[learner1,learner2,learner3],
+            query_strategy=consensus_entropy_sampling
+        )
+        params["committee"] = committee
+        accuracy_scores = committee.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
+        helper()
+
     return render_template("after.html",data=n_queries,accuracy = accuracy_scores)
-    # for i in range(n_queries):
-    #     query_idx, query_inst = learner.query(X_pool)
-    #     with plt.style.context('seaborn-white'):
-    #         plt.figure(figsize=(10, 5))
-    #         plt.subplot(1, 2, 1)
-    #         plt.title('Digit to label')
-    #         plt.imshow(query_inst.reshape(8, 8))
-    #         plt.subplot(1, 2, 2)
-    #         plt.title('Accuracy of your model')
-    #         plt.plot(range(i + 1), accuracy_scores)
-    #         plt.scatter(range(i + 1), accuracy_scores)
-    #         plt.xlabel('number of queries')
-    #         plt.ylabel('accuracy')
-    #         display.display(plt.gcf())
-    #         plt.close('all')
-    #
-    #     print("Which digit is this?")
-    #     y_new = np.array([int(input())], dtype=int)
-    #     learner.teach(query_inst.reshape(1, -1), y_new)
-    #     X_pool, y_pool = np.delete(X_pool, query_idx, axis=0), np.delete(y_pool, query_idx, axis=0)
-    #     accuracy_scores.append(learner.score(X_test, y_test))
-    # for i in range(n_queries):
-    #     query_idx, query_inst = learner.query(X_pool)
-    #     data = query_inst.reshape(8, 8)
-    #     rescaled = (255.0 / data.max() * (data - data.min())).astype(np.uint8)
-    #     im = Image.fromarray(rescaled)
-    #     new_size = (300, 300)
-    #     im = im.resize(new_size)
-    #     filename = secure_filename("image.png")
-    #     im.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename)))
-    #     y_new = np.array([int(input())], dtype=int)
-    #     learner.teach(query_inst.reshape(1, -1), y_new)
-    #     X_pool, y_pool = np.delete(X_pool, query_idx, axis=0), np.delete(y_pool, query_idx, axis=0)
-    #     accuracy_scores.append(learner.score(X_test, y_test))
-    # n_queries = data1
-    # print(data1)
 
 app.run(debug=True)
