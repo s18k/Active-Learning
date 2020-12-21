@@ -82,13 +82,12 @@ def generate_image():
 @app.route("/")
 def main():
     return render_template("index.html",data=[{'name':'Random Forest'}, {'name':'KNN'}, {'name':'Decision Tree'}],query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'},
-                                                                                                                         {'name':'Random Sampling'}])
+                                                                                                                         {'name':'Random Sampling'},
+                                                                                                                         {'name':'Query By Committee'}
+                                                                                                                         ])
 
 
-
-
-
-@app.route('/train',methods=['POST'])
+@app.route('/train', methods=['POST'])
 def helper():
     data = Data.getData()
     X_test = data.X_test
@@ -263,7 +262,7 @@ def query():
         #
         # # assembling the committee
         learner = ActiveLearner(
-            estimator=RandomForestClassifier(),
+            estimator=classifier,
             query_strategy=random_sampling,
             X_training=X_train, y_training=y_train
         )
@@ -274,6 +273,31 @@ def query():
         accuracy.append(accuracy_scores)
         data = Data(n_queries, X_pool, y_pool,learner, None , accuracy, X_test, y_test)
         helper()
+    else:
+        learner1 = ActiveLearner(
+            estimator = RandomForestClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner2 = ActiveLearner(
+            estimator=KNeighborsClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        learner3 = ActiveLearner(
+            estimator=DecisionTreeClassifier(),
+            X_training=X_train,y_training=y_train
+        )
+        committee = Committee(
+            learner_list=[learner1,learner2,learner3]
+        )
+        params["committee"] = committee
+        accuracy_scores = committee.score(X_test, y_test)
+        params["accuracy"] = accuracy_scores
+        print(accuracy_scores)
+        accuracy = []
+        accuracy.append(accuracy_scores)
+        data = Data(n_queries, X_pool, y_pool, None,committee, accuracy, X_test, y_test)
+        helper()
+
     # query_idx, query_inst = learner.query(X_pool)
     # data = query_inst.reshape(8,8)
     # rescaled = (255.0 / data.max() * (data - data.min())).astype(np.uint8)
