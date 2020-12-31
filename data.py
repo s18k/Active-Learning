@@ -11,7 +11,7 @@ class Data:
             print("Here")
             Data()
         return Data.__data
-    def __init__(self,counter,X_pool,y_pool,learner,committee,accuracy,X_test,y_test):
+    def __init__(self,counter,X_pool,y_pool,learner,committee,accuracy,X_test,y_test,classlist,queries):
         print("Inint called")
         self.counter = counter
         self.X_pool = X_pool
@@ -21,6 +21,8 @@ class Data:
         self.accuracy = list(accuracy)
         self.X_test = X_test
         self.y_test = y_test
+        self.classlist = classlist
+        self.queries = queries
         print(type(accuracy))
         Data.__data = self
 
