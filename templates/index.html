@@ -13,17 +13,17 @@
     <center  >
 <!--        <h1>MNIST Digits Dataset using Active Learning</h1>-->
         <br>
-        <h1 style="color:white">MNIST Digits DataSet </h1>
+        <h1 style="color:white">Unified Interface for Active Learning </h1>
         <br>
         <!-- Default form login -->
 
-        <form method="POST" class="text-center border border-light p-5"  style="height: 230px; width: 800px; border: 1px solid black; background:white" action="{{url_for('query')}}">
+        <form method="POST" enctype=multipart/form-data class="text-center border border-light p-5"  style="height: 230px; width: 800px; border: 1px solid black; background:white" action="{{url_for('query')}}">
 
 
 
 <!--            <input type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">-->
             <div class="form-group" style="padding:10px;">
-                <div class="input-group">
+                <div class="input-group" style="padding:5px">
 
                     <span class="input-group-addon" style="width:300px">Please select the Classifier Algorithm</span>
                         <select name="classifier_select" class="selectpicker form-control">
@@ -33,8 +33,7 @@
                         </select>
                 </div>
 
-                <hr>
-                <div class="input-group">
+                <div class="input-group" style="padding:5px">
                     <span class="input-group-addon" style="width:300px">Please select the Query Strategy</span>
                         <select name="strategy_select" class="selectpicker form-control" >
                           {% for o in query %}
@@ -43,9 +42,22 @@
                         </select>
                 </div>
 
-            </div>
-            <input name="queries" type="number" class="form-control mb-4" placeholder="Enter the number of samples you want to label">
 
+            <input style="padding:5px" name="queries" type="number" class="form-control mb-4" placeholder="Enter the number of samples you want to label">
+                <div class="input-group" style="padding:5px">
+                    <span class="input-group-addon" style="width:300px">Please select .zip or .rar file only</span>
+                    <input type=file name=file style="padding:5px" placeholder="">
+                </div>
+
+            <div class="input-group" style="padding:5px">
+                <span class="input-group-addon" style="width:300px">Please select the Structure of Dataset</span>
+                <select name="structure_select" class="selectpicker form-control" >
+                    {% for o in structure %}
+                    <option value="{{ o.id }}">{{ o.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            </div>
         <button class="btn btn-info btn-block my-4" type="submit" value="next">Submit</button>
 
 </form>
