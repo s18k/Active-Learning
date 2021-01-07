@@ -1,5 +1,7 @@
+import base64
 import shutil
 
+import io
 import modAL
 from flask import Flask, render_template, request
 import pickle
@@ -27,7 +29,7 @@ app = Flask(__name__)
 app.secret_key = "super secret key"
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLD = 'C:/Users/ASUS/PycharmProjects/Active Learning/static'
+UPLOAD_FOLD = 'D:/VIIT/FinalYear/Persistent_Project/Project_Data'
 UPLOAD_FOLDER = os.path.join(APP_ROOT, UPLOAD_FOLD)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 import zipfile
@@ -126,26 +128,24 @@ def helper():
     print(counter)
     print(queries)
     if(int(counter)==int(queries)):
-        print("First Condition")
-        print(classlist)
         if(learner != None):
             query_idx, query_inst = learner.query(X_pool)
-            print("Learner")
-            print(learner)
         elif(committee!=None):
             query_idx, query_inst = committee.query(X_pool)
         try:
             arr = query_inst.reshape(200,200,3)
         except:
             arr = query_inst.reshape(200,200)
-        print(arr)
         rescaled = (255.0 / arr.max() * (arr - arr.min())).astype(np.uint8)
         im = Image.fromarray(rescaled)
         new_size = (300, 300)
         im = im.resize(new_size)
         filename = secure_filename("image.png")
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(filename)))
-        im.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename)))
+        # os.remove(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(filename)))
+        im.save(os.path.join(os.path.join(APP_ROOT, 'C:/Users/ASUS/PycharmProjects/Active Learning/static'), secure_filename(filename)))
+        # im_data = io.BytesIO()
+        # im.save(im_data, "JPEG")
+        # encoded_img_data = base64.b64encode(im_data.getvalue())
         X_pool, y_pool = np.delete(X_pool, query_idx, axis=0), np.delete(y_pool, query_idx, axis=0)
         params = {}
         params["X_pool"] = X_pool
@@ -157,37 +157,28 @@ def helper():
         elif committee!=None:
             params["accuracy"] = committee.score(X_test, y_test)
         data.setdata(params)
-        return render_template("after.html",classlist=classlist,query=[{'name':'Uncertainty Sampling'},{'name':'Entropy Sampling'},
-                                                                       {'name':'Random Sampling'},
-                                                                       {'name':'Query By Committee(Uncertainty Sampling)'},
-                                                                       {'name':'Query By Committee(Vote Entropy Sampling)'},
-                                                                       {'name':'Query By Committee(Max Disagreement Sampling)'},
-                                                                       {'name':'Query By Committee(Max STD Sampling)'},
-                                                                       {'name':'Query By Committee(Consensus Entropy Sampling)'}
-
-                                                                       ])
-    if(int(counter)>=1):
+        print("Initial classlist ",classlist)
+        return render_template("after.html",classlist=classlist,UPLOAD_FOLDER=UPLOAD_FOLDER+"/image.png")
+    elif(int(counter)>=1):
         if(learner != None):
             query_idx, query_inst = learner.query(X_pool)
-            print("Learner")
-            print(learner)
         elif(committee!=None):
             query_idx, query_inst = committee.query(X_pool)
-        print(query_inst.shape)
-        print(query_inst)
         try:
             arr = query_inst.reshape(200,200,3)
         except:
             arr = query_inst.reshape(200,200)
-        print(arr)
         rescaled = (255.0 / arr.max() * (arr - arr.min())).astype(np.uint8)
         im = Image.fromarray(rescaled)
         new_size = (300, 300)
         im = im.resize(new_size)
         filename = secure_filename("image.png")
-        os.remove(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(filename)))
-        im.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename)))
-        y_new = np.array([int(request.form['queries'])],dtype=int)
+        # os.remove(os.path.join(app.config['UPLOAD_FOLDER'],secure_filename(filename)))
+        im.save(os.path.join(os.path.join(APP_ROOT, 'C:/Users/ASUS/PycharmProjects/Active Learning/static'), secure_filename(filename)))
+        # im_data = io.BytesIO()
+        # im.save(im_data, "JPEG")
+        # encoded_img_data = base64.b64encode(im_data.getvalue())
+        y_new = np.array([int(request.form.get('label_select'))],dtype=int)
         if(learner!=None):
             learner.teach(query_inst.reshape(1, -1), y_new)
         elif(committee!=None):
@@ -216,7 +207,7 @@ def helper():
         accuracy_string = accuracy_string[:-1]
         iterations = iterations[:-1]
         print("Accuracy string",accuracy_string)
-        return render_template("after.html",data = accuracy_string,iteration = iterations,classlist=classlist)
+        return render_template("after.html",data = accuracy_string,iteration = iterations,classlist=classlist,UPLOAD_FOLDER=UPLOAD_FOLDER+"\image.png")
     else:
         accuracy_string = ""
         iterations = ""
@@ -252,6 +243,7 @@ def query():
     # if user does not select file, browser also
     # submit a empty part without filename
     filename = secure_filename(file.filename)
+
     # shutil.rmtree(os.path.join(app.config['UPLOAD_FOLDER'],filename.split(".")[0]))
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -287,8 +279,9 @@ def query():
     print(filename)
     if option == 0:
         for dirname, _, filenames in os.walk(os.path.join(UPLOAD_FOLDER,filename.split(".")[0])):
+            print(filenames)
             for filename in filenames:
-                if('.jpg' in filename or 'jpeg' in filename):
+                if('.jpg' in filename or 'jpeg' in filename or 'png' in filename):
                     image = Image.open(os.path.join(dirname, filename))
                     image = image.resize((200,200), Image.ANTIALIAS)
                     size = np.array(image).size
@@ -310,8 +303,7 @@ def query():
                     print(classes)
     else:
         for imfile in os.listdir(os.path.join(UPLOAD_FOLDER,filename.split(".")[0])):
-            if imfile.endswith(".jpg") or imfile.endswith(".jpeg"):
-
+            if imfile.endswith(".jpg") or imfile.endswith(".jpeg") or imfile.endswith("png"):
                 image = Image.open(os.path.join(os.path.join(UPLOAD_FOLDER,filename.split(".")[0]), imfile))
                 image = image.resize((200,200), Image.ANTIALIAS)
                 size = np.array(image).size
@@ -383,7 +375,8 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,learner,None,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        print("Calling Helper")
+        return helper()
     elif(str(st)=='Entropy Sampling'):
 
         print(classifier)
@@ -401,7 +394,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,learner,None,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
     elif(str(st)=='Random Sampling'):
         learner = ActiveLearner(
             estimator=classifier,
@@ -414,7 +407,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,learner,None,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
     elif(str(st)=='Query By Committee(Vote Entropy Sampling)'):
         learner1 = ActiveLearner(
             estimator = RandomForestClassifier(),
@@ -439,7 +432,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,None,committee,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
 
     elif(str(st)=='Query By Committee(Uncertainty Sampling)'):
         learner1 = ActiveLearner(
@@ -465,7 +458,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,None,committee,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
 
     elif(str(st)=='Query By Committee(Max Disagreement Sampling)'):
         learner1 = ActiveLearner(
@@ -491,7 +484,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,None,committee,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
 
     elif(str(st)=='Query By Committee(Max STD Sampling)'):
         learner1 = ActiveLearner(
@@ -517,7 +510,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,None,committee,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
 
     elif(str(st)=='Query By Committee(Consensus Entropy Sampling)'):
         learner1 = ActiveLearner(
@@ -543,8 +536,7 @@ def query():
         accuracy = []
         accuracy.append(accuracy_scores)
         data = Data(n_queries,X_pool,y_pool,None,committee,accuracy,X_test,y_test,classlist,n_queries)
-        helper()
+        return helper()
 
-    return render_template("after.html",data=n_queries,accuracy = accuracy_scores)
 
 app.run(debug=True)
