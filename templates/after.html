@@ -11,9 +11,19 @@
 </head>
 <body>
     <center>
-        <img src="../static/image.png">
-        <form method="POST", action="{{url_for('helper')}}">
-            Which Digit is this?<input name="queries" type="number" placeholder="Which Digit is this">
+        <img src="{{ url_for('static', filename='image.png') }}">
+        <form method="POST" enctype=multipart/form-data class="text-center border border-light p-5"  style="height: 230px; width: 800px; border: 1px solid black; background:white" action="{{url_for('helper')}}">
+            <div class="form-group" style="padding:10px;">
+                <div class="input-group" style="padding:5px">
+
+                    <span class="input-group-addon" style="width:300px">Please select the Classifier Algorithm</span>
+                    <select name="label_select" class="selectpicker form-control">
+                        {% for o in classlist %}
+                        <option value="{{ o.number }}">{{ o.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
             <input type="submit",value="train">
         </form>
         <div style="height:500px; width:500px">
