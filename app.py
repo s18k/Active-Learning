@@ -36,7 +36,7 @@ import zipfile
 from flask import Flask, request, redirect, url_for, flash, render_template
 from werkzeug.utils import secure_filename
 
-ALLOWED_EXTENSIONS = set(['zip','rar'])
+ALLOWED_EXTENSIONS = set(['zip','rar','png','jpeg','jpg'])
 import numpy as np
 
 from modAL.models import ActiveLearner
@@ -91,6 +91,41 @@ def generate_image():
     imsave(buffer, arr, plugin='pil', format_str='png')
     buffer.seek(0)
     return send_file(buffer, mimetype='image/png')
+
+
+@app.route("/predict")
+def predict():
+    return render_template("predict.html")
+
+
+@app.route("/result",methods=['GET','POST'])
+def result():
+    data = Data.getData()
+    learner = data.learner
+    committee = data.committee
+    classlist = data.classlist
+    file = request.files['file']
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    filename = secure_filename(file.filename)
+
+    # shutil.rmtree(os.path.join(app.config['UPLOAD_FOLDER'],filename.split(".")[0]))
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(UPLOAD_FOLDER, filename))
+        image = Image.open(os.path.join(UPLOAD_FOLDER, filename))
+        image = image.resize((200,200), Image.ANTIALIAS)
+        size = np.array(image).size
+        x = numpy.array(image).reshape((1,size))
+        if learner!=None:
+            label = learner.predict(x)
+        elif committee!=None:
+            label = committee.predict(x)
+        print(label)
+        print(classlist[label[0]]['name'])
+        return render_template("result.html",name=classlist[label[0]]['name'])
+    else:
+        return render_template("result.html",name="Sorry something went wrong")
 
 
 
