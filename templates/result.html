@@ -5,7 +5,13 @@
     <title>Title</title>
 </head>
 <body>
-    <h1>Label of the Uploaded Image {{ name }}</h1>
-    <a href="/predict">Classify Images</a>
+    <center>
+        <h1>Label of the Uploaded Images {{ name }}</h1>
+        {% for o in list %}
+        <h1>{{o.image}} : {{o.Label}}</h1>
+        {% endfor %}
+        <a href="/predict">Classify Images</a>
+    </center>
+
 </body>
 </html>
