@@ -108,24 +108,90 @@ def result():
     # if user does not select file, browser also
     # submit a empty part without filename
     filename = secure_filename(file.filename)
-
-    # shutil.rmtree(os.path.join(app.config['UPLOAD_FOLDER'],filename.split(".")[0]))
+    option = 0
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
-        image = Image.open(os.path.join(UPLOAD_FOLDER, filename))
-        image = image.resize((200,200), Image.ANTIALIAS)
-        size = np.array(image).size
-        x = numpy.array(image).reshape((1,size))
-        if learner!=None:
-            label = learner.predict(x)
-        elif committee!=None:
-            label = committee.predict(x)
-        print(label)
-        print(classlist[label[0]]['name'])
-        return render_template("result.html",name=classlist[label[0]]['name'])
+        if(filename.split(".")[1]=="rar"):
+            option = 1
+            patoolib.extract_archive(os.path.join(UPLOAD_FOLDER, filename), outdir=os.path.join(UPLOAD_FOLDER))
+        elif(filename.split(".")[1]=="zip"):
+            option = 1
+            zip_ref = zipfile.ZipFile(os.path.join(UPLOAD_FOLDER, filename), 'r')
+            zip_ref.extractall(UPLOAD_FOLDER)
+            zip_ref.close()
+            print("Succesfull")
+        else:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            image = Image.open(os.path.join(UPLOAD_FOLDER, filename))
+            image = image.resize((200,200), Image.ANTIALIAS)
+            size = np.array(image).size
+            x = numpy.array(image).reshape((1,size))
+            if learner!=None:
+                label = learner.predict(x)
+            elif committee!=None:
+                label = committee.predict(x)
+            print(label)
+            print(classlist[label[0]]['name'])
+            return render_template("result.html",name=classlist[label[0]]['name'])
+        if(option==1):
+            list = []
+            for dirname, _, filenames in os.walk(os.path.join(UPLOAD_FOLDER,filename.split(".")[0])):
+                print(filenames)
+                for filename in filenames:
+                    if('.jpg' in filename or 'jpeg' in filename or 'png' in filename):
+                        image = Image.open(os.path.join(dirname, filename))
+                        image = image.resize((200,200), Image.ANTIALIAS)
+                        size = np.array(image).size
+                        x = numpy.array(image).reshape((1,size))
+                        try:
+                            if learner!=None:
+                                label = learner.predict(x)
+                            elif committee!=None:
+                                label = committee.predict(x)
+                            list.append({"image":filename,"Label":classlist[label[0]]['name']})
+                        except:
+                            continue
+                    print(list)
+            return render_template("result.html",list = list)
+            # print("!")
+            # list = []
+            #
+            # for imfile in os.listdir(os.path.join(UPLOAD_FOLDER,filename.split(".")[0])):
+            #     print(imfile)
+            #     if imfile.endswith(".jpg") or imfile.endswith(".jpeg") or imfile.endswith(".png"):
+            #         image = Image.open(os.path.join(os.path.join(UPLOAD_FOLDER,filename.split(".")[0]), imfile))
+            #         image = image.resize((200,200), Image.ANTIALIAS)
+            #         size = np.array(image).size
+            #         x = numpy.array(image).reshape((1,size))
+            #         try:
+            #             if learner!=None:
+            #                 label = learner.predict(x)
+            #             elif committee!=None:
+            #                 label = committee.predict(x)
+            #             list.append({"image":imfile,"Label":classlist[label[0]]['name']})
+            #         except:
+            #             continue
+            #         print(list)
+            # return render_template("result.html",list = list)
     else:
-        return render_template("result.html",name="Sorry something went wrong")
+        return render_template("result.html",name="Sorry")
+    # shutil.rmtree(os.path.join(app.config['UPLOAD_FOLDER'],filename.split(".")[0]))
+    # if file and allowed_file(file.filename):
+    #     filename = secure_filename(file.filename)
+    #     file.save(os.path.join(UPLOAD_FOLDER, filename))
+    #     image = Image.open(os.path.join(UPLOAD_FOLDER, filename))
+    #     image = image.resize((200,200), Image.ANTIALIAS)
+    #     size = np.array(image).size
+    #     x = numpy.array(image).reshape((1,size))
+    #     if learner!=None:
+    #         label = learner.predict(x)
+    #     elif committee!=None:
+    #         label = committee.predict(x)
+    #     print(label)
+    #     print(classlist[label[0]]['name'])
+    #     return render_template("result.html",name=classlist[label[0]]['name'])
+    # else:
+    #     return render_template("result.html",name="Sorry something went wrong")
 
 
 
@@ -225,6 +291,7 @@ def helper():
         params["counter"] = int(counter)-1
         if learner!=None:
             params["accuracy"] = learner.score(X_test,y_test)
+            print(learner.score(X_test,y_test))
         elif committee!=None:
             params["accuracy"] = committee.score(X_test, y_test)
         data.setdata(params)
