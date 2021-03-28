@@ -1,4 +1,4 @@
-<h1 align="center"> Curious </h1>
+<h1 align="center"> Activizer </h1>
 
 
 <h2 align="center"> Interface for Active Learning </h2>
