@@ -13,7 +13,7 @@
      to pick the samples it wants to learn from. </p> <br>
 
 
-- Interface for Active Learning supports Image dataset where the user can upload data in Zip or RAR format. It supports 3 classifiers and 7 query strategies.
+<p>Interface for Active Learning supports Image dataset where the user can upload data in Zip or RAR format. It supports 3 classifiers and 7 query strategies.<p>
 <h3> Classifiers </h3>
 
 - KNN Classifier
