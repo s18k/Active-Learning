@@ -14,6 +14,26 @@
 
 
 - Interface for Active Learning supports Image dataset where the user can upload data in Zip or RAR format. It supports 3 classifiers and 7 query strategies.
+<h3> Classifiers </h3>
+- KNN Classifier
+
+- Random Forest Classifier
+
+- Decision Tree Classifier
+<h3> Query By Committee </h3>
+- Uncertainty Sampling
+
+- Random Sampling
+
+- Entropy Sampling
+
+- Query By Committee(Uncertainty Sampling)
+
+- Query By Committee(Vote Entropy Sampling)
+
+- Query By Committee(Max Disagreement Sampling)
+
+- Query By Committee(Consensus Entropy Sampling)
 
 - This project is implemented with the Active Learning package [Modal](https://github.com/modAL-python/modAL)
 
