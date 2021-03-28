@@ -3,7 +3,6 @@
 
 <h2 align="center"> Interface for Active Learning </h2>
 
-<p align="center"> <b> Shreyas Kamath, Adesh Gaikwad and Abhishek Supsande <br> Vishwakarma Institute of Information Technology, Pune <br> invalid@test.com </b> 
 
 </p>
 
