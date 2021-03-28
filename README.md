@@ -38,7 +38,7 @@
 - Query By Committee(Consensus Entropy Sampling)
 
 
-This project is implemented with the Active Learning package [modlAL](https://github.com/modAL-python/modAL)
+This project is implemented with the Active Learning package [modAL](https://github.com/modAL-python/modAL)
 
 <h3 align="center"> How to Run</h3>
 
