@@ -15,12 +15,14 @@
 
 - Interface for Active Learning supports Image dataset where the user can upload data in Zip or RAR format. It supports 3 classifiers and 7 query strategies.
 <h3> Classifiers </h3>
+
 - KNN Classifier
 
 - Random Forest Classifier
 
 - Decision Tree Classifier
 <h3> Query By Committee </h3>
+
 - Uncertainty Sampling
 
 - Random Sampling
