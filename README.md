@@ -43,7 +43,7 @@ This project is implemented with the Active Learning package [modAL](https://git
 <h3 align="center"> How to Run</h3>
 
 
-- Select the Classifier Algorithm, the Query Strategy and give the number of samples you wish to label. Then select the training / testing dataset in Zip or RAR format
+- Select the Classifier Algorithm, the Query Strategy and give the number of samples you wish to label. Then select the training / testing dataset in Zip format
 
 <p align="center">
 <img src="images/Screenshot (490).png" align="center" width="900"> <br>
