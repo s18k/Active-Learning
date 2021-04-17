@@ -63,7 +63,7 @@ This project is implemented with the Active Learning package [modAL](https://git
 
 - The user can see the images along with the labels provided by the algorithm selected during training. The trained model can be downloaded in pickle format (.pkl file) and can be used for prediction by unpickling it.
 
-- The Interface can be used for prediction by uploading the validation dataset in Zip / RAR format. 
+- The Interface can be used for prediction by uploading the validation dataset in Zip format. 
 
 <p align="center">
 <img src="images/Screenshot (492).png"> <br>
